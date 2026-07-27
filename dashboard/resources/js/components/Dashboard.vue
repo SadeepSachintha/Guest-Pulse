@@ -14,14 +14,14 @@
             Dashboard
           </a>
         </li>
-        <li class="nav-item">
-          <a href="#" @click.prevent="showToast('Settings & Integrations are managed globally via HMS 2.0.', 'info')">
+        <li class="nav-item" :class="{ active: isIntegrationsDrawerOpen }">
+          <a href="#" @click.prevent="isIntegrationsDrawerOpen = true">
             <i class="fa-solid fa-sliders"></i>
             Integrations
           </a>
         </li>
-        <li class="nav-item">
-          <a href="#" @click.prevent="showToast('Documentation & Help modules are loaded offline.', 'info')">
+        <li class="nav-item" :class="{ active: isHelpDrawerOpen }">
+          <a href="#" @click.prevent="isHelpDrawerOpen = true">
             <i class="fa-solid fa-circle-question"></i>
             Help Support
           </a>
@@ -374,6 +374,181 @@
       </div>
     </div>
 
+    <!-- Help Support Drawer -->
+    <div 
+      v-if="isHelpDrawerOpen" 
+      class="side-drawer-backdrop" 
+      @click="isHelpDrawerOpen = false"
+    ></div>
+    
+    <div class="side-drawer" :class="{ open: isHelpDrawerOpen }">
+      <div class="drawer-header">
+        <h3>Help & Documentation</h3>
+        <button @click="isHelpDrawerOpen = false" class="btn-close">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="drawer-body" style="gap: 1.5rem;">
+        <div style="background: rgba(99, 102, 241, 0.05); padding: 1.25rem; border-radius: 12px; border: 1px solid var(--primary-glow);">
+          <h4 style="margin-bottom: 0.5rem; color: var(--primary);"><i class="fa-solid fa-circle-info"></i> Guest Pulse NLP FAQ</h4>
+          <p style="font-size: 0.85rem; line-height: 1.4; color: var(--text-muted);">
+            Welcome to the local help guide. Guest Pulse runs offline-first NLP processing pipelines linked directly to HMS 2.0.
+          </p>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+          <details style="background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 10px; border: 1px solid var(--card-border); cursor: pointer;" open>
+            <summary style="font-weight: 600; font-size: 0.9rem; margin-bottom: 0.5rem; outline: none; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+              <span>📈 How is the Sentiment Index calculated?</span>
+              <i class="fa-solid fa-chevron-down" style="font-size: 0.8rem; color: var(--text-muted);"></i>
+            </summary>
+            <p style="font-size: 0.85rem; line-height: 1.5; color: var(--text-muted); cursor: default;">
+              We use the NLTK VADER lexicon algorithm to run sentiment polarity checks on the text. The compound sentiment score ranges from <strong>-1.0 (extremely negative)</strong> to <strong>+1.0 (extremely positive)</strong>. Index values above +0.15 are positive, and below -0.15 are negative.
+            </p>
+          </details>
+
+          <details style="background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 10px; border: 1px solid var(--card-border); cursor: pointer;">
+            <summary style="font-weight: 600; font-size: 0.9rem; margin-bottom: 0.5rem; outline: none; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+              <span>🔍 What is Aspect-Based Sentiment Mining?</span>
+              <i class="fa-solid fa-chevron-down" style="font-size: 0.8rem; color: var(--text-muted);"></i>
+            </summary>
+            <p style="font-size: 0.85rem; line-height: 1.5; color: var(--text-muted); cursor: default;">
+              Instead of reading reviews only as a whole, our Python pipeline parses sentences to look for aspect keywords. For example, sentences containing <em>"wifi"</em> or <em>"internet"</em> are evaluated independently to isolate complaints about connection speeds from praises about food or location.
+            </p>
+          </details>
+
+          <details style="background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 10px; border: 1px solid var(--card-border); cursor: pointer;">
+            <summary style="font-weight: 600; font-size: 0.9rem; margin-bottom: 0.5rem; outline: none; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+              <span>🤖 How do the AI reply suggestions work?</span>
+              <i class="fa-solid fa-chevron-down" style="font-size: 0.8rem; color: var(--text-muted);"></i>
+            </summary>
+            <p style="font-size: 0.85rem; line-height: 1.5; color: var(--text-muted); cursor: default;">
+              The AI Response Suggester is a localized, rules-based engine that maps sentiments (positive, neutral, negative) and targeted aspects into customized professional templates. It supports 4 distinct tones: Professional, Casual, Apologetic, and Thankful.
+            </p>
+          </details>
+
+          <details style="background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 10px; border: 1px solid var(--card-border); cursor: pointer;">
+            <summary style="font-weight: 600; font-size: 0.9rem; margin-bottom: 0.5rem; outline: none; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+              <span>⚠️ What should I do if the NLP service goes offline?</span>
+              <i class="fa-solid fa-chevron-down" style="font-size: 0.8rem; color: var(--text-muted);"></i>
+            </summary>
+            <p style="font-size: 0.85rem; line-height: 1.5; color: var(--text-muted); cursor: default;">
+              If the Python server is offline, Laravel falls back to an offline rating-based analyzer. To restore NLP mining and custom response tone features, start the Python process from the terminal: <code>.venv\Scripts\python main.py</code> inside the <code>nlp-service</code> folder.
+            </p>
+          </details>
+        </div>
+      </div>
+      
+      <div class="drawer-footer">
+        <button @click="isHelpDrawerOpen = false" class="btn-primary">Got it</button>
+      </div>
+    </div>
+
+    <!-- Integrations & Settings Drawer -->
+    <div 
+      v-if="isIntegrationsDrawerOpen" 
+      class="side-drawer-backdrop" 
+      @click="isIntegrationsDrawerOpen = false"
+    ></div>
+    
+    <div class="side-drawer" :class="{ open: isIntegrationsDrawerOpen }">
+      <div class="drawer-header">
+        <h3>Integrations & Feeds</h3>
+        <button @click="isIntegrationsDrawerOpen = false" class="btn-close">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="drawer-body" style="gap: 1.5rem;">
+        <div style="background: rgba(16, 185, 129, 0.05); padding: 1.25rem; border-radius: 12px; border: 1px solid rgba(16, 185, 129, 0.2);">
+          <h4 style="margin-bottom: 0.5rem; color: var(--success);"><i class="fa-solid fa-link"></i> HMS 2.0 Core Connected</h4>
+          <p style="font-size: 0.85rem; line-height: 1.4; color: var(--text-muted);">
+            Linked directly to your HMS SQLite database. Reputation scores and replied status sync globally with guest files.
+          </p>
+        </div>
+
+        <p style="font-size: 0.9rem; font-weight: 600; margin-bottom: -0.5rem;">Active Scraping Channels</p>
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+          <!-- Google Toggles -->
+          <div style="background: rgba(255,255,255,0.02); padding: 1.25rem; border-radius: 12px; border: 1px solid var(--card-border); display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+              <span class="source-badge google"><i class="fa-brands fa-google"></i></span>
+              <div style="display: flex; flex-direction: column;">
+                <span style="font-weight: 600; font-size: 0.9rem;">Google Business</span>
+                <span style="font-size: 0.75rem; color: var(--text-muted);">Simulated Google Maps Reviews</span>
+              </div>
+            </div>
+            <label class="switch-toggle" style="position: relative; display: inline-block; width: 44px; height: 24px;">
+              <input type="checkbox" v-model="integrations.google" style="opacity: 0; width: 0; height: 0;">
+              <span class="slider-toggle" :style="{ 
+                position: 'absolute', cursor: 'pointer', top: 0, left: 0, right: 0, bottom: 0, 
+                backgroundColor: integrations.google ? 'var(--success)' : 'rgba(255,255,255,0.1)', 
+                borderRadius: '24px', transition: '0.3s' 
+              }">
+                <span :style="{ 
+                  position: 'absolute', content: '', height: '18px', width: '18px', left: integrations.google ? '22px' : '3px', bottom: '3px', 
+                  backgroundColor: 'white', borderRadius: '50%', transition: '0.3s' 
+                }"></span>
+              </span>
+            </label>
+          </div>
+
+          <!-- Booking.com Toggle -->
+          <div style="background: rgba(255,255,255,0.02); padding: 1.25rem; border-radius: 12px; border: 1px solid var(--card-border); display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+              <span class="source-badge booking"><i class="fa-solid fa-b"></i></span>
+              <div style="display: flex; flex-direction: column;">
+                <span style="font-weight: 600; font-size: 0.9rem;">Booking.com Feed</span>
+                <span style="font-size: 0.75rem; color: var(--text-muted);">Guest XML Ingestion Feed</span>
+              </div>
+            </div>
+            <label class="switch-toggle" style="position: relative; display: inline-block; width: 44px; height: 24px;">
+              <input type="checkbox" v-model="integrations.booking" style="opacity: 0; width: 0; height: 0;">
+              <span class="slider-toggle" :style="{ 
+                position: 'absolute', cursor: 'pointer', top: 0, left: 0, right: 0, bottom: 0, 
+                backgroundColor: integrations.booking ? 'var(--success)' : 'rgba(255,255,255,0.1)', 
+                borderRadius: '24px', transition: '0.3s' 
+              }">
+                <span :style="{ 
+                  position: 'absolute', content: '', height: '18px', width: '18px', left: integrations.booking ? '22px' : '3px', bottom: '3px', 
+                  backgroundColor: 'white', borderRadius: '50%', transition: '0.3s' 
+                }"></span>
+              </span>
+            </label>
+          </div>
+
+          <!-- TripAdvisor Toggle -->
+          <div style="background: rgba(255,255,255,0.02); padding: 1.25rem; border-radius: 12px; border: 1px solid var(--card-border); display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+              <span class="source-badge tripadvisor"><i class="fa-brands fa-tripadvisor"></i></span>
+              <div style="display: flex; flex-direction: column;">
+                <span style="font-weight: 600; font-size: 0.9rem;">TripAdvisor Channel</span>
+                <span style="font-size: 0.75rem; color: var(--text-muted);">Simulated HTML Review Scraper</span>
+              </div>
+            </div>
+            <label class="switch-toggle" style="position: relative; display: inline-block; width: 44px; height: 24px;">
+              <input type="checkbox" v-model="integrations.tripadvisor" style="opacity: 0; width: 0; height: 0;">
+              <span class="slider-toggle" :style="{ 
+                position: 'absolute', cursor: 'pointer', top: 0, left: 0, right: 0, bottom: 0, 
+                backgroundColor: integrations.tripadvisor ? 'var(--success)' : 'rgba(255,255,255,0.1)', 
+                borderRadius: '24px', transition: '0.3s' 
+              }">
+                <span :style="{ 
+                  position: 'absolute', content: '', height: '18px', width: '18px', left: integrations.tripadvisor ? '22px' : '3px', bottom: '3px', 
+                  backgroundColor: 'white', borderRadius: '50%', transition: '0.3s' 
+                }"></span>
+              </span>
+            </label>
+          </div>
+        </div>
+      </div>
+      
+      <div class="drawer-footer">
+        <button @click="isIntegrationsDrawerOpen = false" class="btn-primary">Apply Settings</button>
+      </div>
+    </div>
+
     <!-- Alert Banner -->
     <div class="alert-banner" :class="[toast.type, { show: toast.show }]">
       <i :class="getToastIcon(toast.type)"></i>
@@ -413,6 +588,13 @@ export default {
       generatingResponse: false,
       savingReply: false,
       isDrawerOpen: false,
+      isHelpDrawerOpen: false,
+      isIntegrationsDrawerOpen: false,
+      integrations: {
+        google: true,
+        booking: true,
+        tripadvisor: true
+      },
       selectedReview: null,
       responseDraft: '',
       selectedTone: 'professional',
@@ -480,12 +662,14 @@ export default {
     async fetchNewReviews() {
       this.fetchingNew = true;
       try {
+        const activeSources = Object.keys(this.integrations).filter(k => this.integrations[k]).join(',');
         const response = await fetch('/api/reviews/fetch', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-          }
+          },
+          body: JSON.stringify({ sources: activeSources })
         });
         
         const data = await response.json();

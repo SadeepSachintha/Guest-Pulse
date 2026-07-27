@@ -319,10 +319,19 @@ POOL_REVIEWS = [
 ]
 
 @app.get("/scrape", response_model=List[ReviewItem])
-def scrape_reviews(count: int = 5):
+def scrape_reviews(count: int = 5, sources: Optional[str] = None):
     # Simulates review scraping by pulling a randomized subset of reviews
     # with dates adjusted dynamically based on the current system time.
-    selected_reviews = random.sample(POOL_REVIEWS, min(count, len(POOL_REVIEWS)))
+    pool = POOL_REVIEWS
+    if sources:
+        allowed_sources = [s.strip().lower() for s in sources.split(",") if s.strip()]
+        if allowed_sources:
+            pool = [r for r in POOL_REVIEWS if r["source"].lower() in allowed_sources]
+            
+    if not pool:
+        return []
+
+    selected_reviews = random.sample(pool, min(count, len(pool)))
     
     results = []
     base_date = datetime.now()

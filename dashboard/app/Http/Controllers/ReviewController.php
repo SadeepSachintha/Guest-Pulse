@@ -141,15 +141,15 @@ class ReviewController extends Controller
         ]);
     }
 
-    /**
-     * Trigger review scraping simulation and run NLP analysis on new additions.
-     */
-    public function fetchNewReviews()
+    public function fetchNewReviews(Request $request)
     {
         try {
+            $sources = $request->input('sources');
+            
             // Call the python scraping microservice
             $response = Http::timeout(10)->get("{$this->nlpServiceUrl}/scrape", [
-                'count' => 6
+                'count' => 6,
+                'sources' => $sources
             ]);
 
             if ($response->failed()) {
