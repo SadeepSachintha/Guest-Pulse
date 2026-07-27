@@ -883,4 +883,43 @@ h1, h2, h3, h4, h5, h6 {
     color: #f43f5e;
 }
 
+/* Collapsible Sidebar Styles */
+.app-sidebar {
+    transition: var(--transition);
+}
 
+.app-sidebar.collapsed {
+    transform: translateX(-100%);
+}
+
+.app-main {
+    transition: var(--transition);
+}
+
+.app-main.collapsed {
+    margin-left: 0;
+}
+
+.btn-toggle-sidebar {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--card-border);
+    color: var(--text-muted);
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: var(--transition);
+    outline: none;
+    margin-top: 0.15rem;
+    flex-shrink: 0;
+}
+
+.btn-toggle-sidebar:hover {
+    background: var(--primary-glow);
+    color: var(--text-main);
+    border-color: var(--primary);
+    box-shadow: 0 0 10px rgba(99, 102, 241, 0.2);
+}

@@ -1,7 +1,7 @@
 <template>
   <div class="app-layout">
     <!-- Sidebar -->
-    <aside class="app-sidebar">
+    <aside class="app-sidebar" :class="{ collapsed: isSidebarCollapsed }">
       <div class="brand">
         <i class="fa-solid fa-heart-pulse brand-icon"></i>
         <span class="brand-text">Guest Pulse</span>
@@ -38,12 +38,17 @@
     </aside>
 
     <!-- Main Content -->
-    <main class="app-main">
+    <main class="app-main" :class="{ collapsed: isSidebarCollapsed }">
       <!-- Header -->
       <header class="dashboard-header">
-        <div class="header-title">
-          <h1>Reputation Insights</h1>
-          <p>Monitor reviews, NLP sentiments, and draft AI response suggestions.</p>
+        <div class="header-title" style="display: flex; align-items: flex-start; gap: 1.25rem;">
+          <button @click="isSidebarCollapsed = !isSidebarCollapsed" class="btn-toggle-sidebar" :title="isSidebarCollapsed ? 'Show Sidebar' : 'Hide Sidebar'">
+            <i class="fa-solid" :class="isSidebarCollapsed ? 'fa-bars' : 'fa-bars-staggered'"></i>
+          </button>
+          <div>
+            <h1>Reputation Insights</h1>
+            <p>Monitor reviews, NLP sentiments, and draft AI response suggestions.</p>
+          </div>
         </div>
         <div>
           <button 
@@ -665,6 +670,7 @@ export default {
       fetchingNew: false,
       generatingResponse: false,
       savingReply: false,
+      isSidebarCollapsed: false,
       isDrawerOpen: false,
       isHelpDrawerOpen: false,
       isIntegrationsDrawerOpen: false,
