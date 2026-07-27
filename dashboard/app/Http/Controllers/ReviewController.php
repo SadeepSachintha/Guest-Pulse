@@ -246,7 +246,8 @@ class ReviewController extends Controller
                 $suggestion = str_replace("Valued Guest", $review->reviewer_name, $suggestion);
 
                 $review->update([
-                    'response_suggested' => $suggestion
+                    'response_suggested' => $suggestion,
+                    'response_tone' => $tone
                 ]);
 
                 return response()->json([

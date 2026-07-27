@@ -19,6 +19,7 @@ class Review extends Model
         'aspect_sentiments',
         'review_date',
         'response_suggested',
+        'response_tone',
         'reply_text',
         'response_status',
     ];

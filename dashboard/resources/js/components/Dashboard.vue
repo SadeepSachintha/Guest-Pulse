@@ -297,6 +297,29 @@
               </span>
             </div>
 
+            <!-- AI Audit Panel -->
+            <div v-if="review.response_status === 'replied'" style="margin-top: 1rem; padding: 1rem; background: rgba(255,255,255,0.01); border: 1px dashed var(--card-border); border-radius: 12px; font-size: 0.85rem;">
+              <details style="cursor: pointer;">
+                <summary style="display: flex; justify-content: space-between; align-items: center; font-weight: 600; outline: none; list-style: none; color: var(--primary);">
+                  <span><i class="fa-solid fa-clipboard-check"></i> AI Response Audit Log</span>
+                  <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: normal; text-transform: uppercase;">
+                    Tone: <strong>{{ review.response_tone || 'Professional' }}</strong> | Similarity: <strong>{{ getSimilarity(review.response_suggested, review.reply_text) }}%</strong>
+                  </span>
+                </summary>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid rgba(255,255,255,0.04);">
+                  <div>
+                    <span style="display: block; font-weight: 600; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.25rem; text-transform: uppercase;">🤖 Original AI Suggested Draft</span>
+                    <pre style="white-space: pre-wrap; font-family: var(--font-body); font-size: 0.8rem; line-height: 1.4; color: var(--text-muted); background: rgba(0,0,0,0.15); padding: 0.75rem; border-radius: 8px; max-height: 150px; overflow-y: auto;">{{ review.response_suggested || 'No suggestion logged.' }}</pre>
+                  </div>
+                  <div>
+                    <span style="display: block; font-weight: 600; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.25rem; text-transform: uppercase;">✍️ Final Submitted Reply</span>
+                    <pre style="white-space: pre-wrap; font-family: var(--font-body); font-size: 0.8rem; line-height: 1.4; color: var(--text-main); background: rgba(0,0,0,0.15); padding: 0.75rem; border-radius: 8px; max-height: 150px; overflow-y: auto;">{{ review.reply_text }}</pre>
+                  </div>
+                </div>
+              </details>
+            </div>
+
             <!-- Footer Actions -->
             <div class="review-actions">
               <div class="action-status">
@@ -1026,6 +1049,31 @@ export default {
     truncateText(text, length) {
       if (!text) return '';
       return text.length > length ? text.substring(0, length) + '...' : text;
+    },
+
+    getSimilarity(str1, str2) {
+      if (!str1 || !str2) return 0;
+      const s1 = str1.trim().replace(/\s+/g, ' ');
+      const s2 = str2.trim().replace(/\s+/g, ' ');
+      
+      const track = Array(s2.length + 1).fill(null).map(() => Array(s1.length + 1).fill(null));
+      for (let i = 0; i <= s1.length; i += 1) track[0][i] = i;
+      for (let j = 0; j <= s2.length; j += 1) track[j][0] = j;
+      
+      for (let j = 1; j <= s2.length; j += 1) {
+        for (let i = 1; i <= s1.length; i += 1) {
+          const indicator = s1[i - 1] === s2[j - 1] ? 0 : 1;
+          track[j][i] = Math.min(
+            track[j][i - 1] + 1, // deletion
+            track[j - 1][i] + 1, // insertion
+            track[j - 1][i - 1] + indicator // substitution
+          );
+        }
+      }
+      const dist = track[s2.length][s1.length];
+      const maxLen = Math.max(s1.length, s2.length);
+      if (maxLen === 0) return 100;
+      return Math.round(((maxLen - dist) / maxLen) * 100);
     }
   }
 };
