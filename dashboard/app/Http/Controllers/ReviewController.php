@@ -67,7 +67,13 @@ class ReviewController extends Controller
                     'avg_rating' => 0,
                     'avg_sentiment' => 0,
                     'total_reviews' => 0,
-                    'response_rate' => 0
+                    'response_rate' => 0,
+                    'deltas' => [
+                        'rating' => 0,
+                        'sentiment' => 0,
+                        'reviews' => 0,
+                        'response_rate' => 0
+                    ]
                 ],
                 'charts' => [
                     'sources' => [],
@@ -82,6 +88,39 @@ class ReviewController extends Controller
         
         $repliedCount = Review::where('response_status', 'replied')->count();
         $responseRate = round(($repliedCount / $totalReviews) * 100, 1);
+
+        // Week-over-week deltas (relative to max review date to support mock pools)
+        $maxDate = Review::max('review_date');
+        if ($maxDate) {
+            $latestCarbon = \Carbon\Carbon::parse($maxDate);
+            $cutoffRecent = $latestCarbon->copy()->subDays(7)->format('Y-m-d');
+            $cutoffPrevious = $latestCarbon->copy()->subDays(14)->format('Y-m-d');
+            
+            // Recent Period stats (last 7 days of data)
+            $recentTotal = Review::where('review_date', '>=', $cutoffRecent)->count();
+            $recentRating = Review::where('review_date', '>=', $cutoffRecent)->avg('rating') ?? 0;
+            $recentSentiment = Review::where('review_date', '>=', $cutoffRecent)->avg('sentiment_score') ?? 0;
+            $recentReplied = Review::where('review_date', '>=', $cutoffRecent)->where('response_status', 'replied')->count();
+            $recentResponseRate = $recentTotal > 0 ? ($recentReplied / $recentTotal) * 100 : 0;
+            
+            // Previous Period stats (prior 7 days)
+            $prevTotal = Review::whereBetween('review_date', [$cutoffPrevious, $cutoffRecent])->count();
+            $prevRating = Review::whereBetween('review_date', [$cutoffPrevious, $cutoffRecent])->avg('rating') ?? 0;
+            $prevSentiment = Review::whereBetween('review_date', [$cutoffPrevious, $cutoffRecent])->avg('sentiment_score') ?? 0;
+            $prevReplied = Review::whereBetween('review_date', [$cutoffPrevious, $cutoffRecent])->where('response_status', 'replied')->count();
+            $prevResponseRate = $prevTotal > 0 ? ($prevReplied / $prevTotal) * 100 : 0;
+            
+            // Deltas
+            $deltaRating = round($recentRating - $prevRating, 1);
+            $deltaSentiment = round($recentSentiment - $prevSentiment, 2);
+            $deltaReviews = $recentTotal - $prevTotal;
+            $deltaResponseRate = round($recentResponseRate - $prevResponseRate, 1);
+        } else {
+            $deltaRating = 0;
+            $deltaSentiment = 0;
+            $deltaReviews = 0;
+            $deltaResponseRate = 0;
+        }
 
         // Sources count
         $sources = Review::select('source', \DB::raw('count(*) as count'))
@@ -131,7 +170,13 @@ class ReviewController extends Controller
                 'avg_rating' => $avgRating,
                 'avg_sentiment' => $avgSentiment,
                 'total_reviews' => $totalReviews,
-                'response_rate' => $responseRate
+                'response_rate' => $responseRate,
+                'deltas' => [
+                    'rating' => $deltaRating,
+                    'sentiment' => $deltaSentiment,
+                    'reviews' => $deltaReviews,
+                    'response_rate' => $deltaResponseRate
+                ]
             ],
             'charts' => [
                 'sources' => $sources,

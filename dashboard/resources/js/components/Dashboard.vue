@@ -63,11 +63,17 @@
         <!-- Card 1 -->
         <div class="stat-card">
           <div class="stat-icon reviews">
-            <i class="fa-solid fa-comments"></i>
+            <i class="fa-comments fa-solid"></i>
           </div>
           <div class="stat-info">
             <span class="stat-value">{{ kpis.total_reviews }}</span>
-            <span class="stat-label">Total Reviews</span>
+            <span class="stat-label" style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+              Total Reviews
+              <span v-if="kpis.deltas && kpis.deltas.reviews !== 0" class="trend-badge" :class="kpis.deltas.reviews >= 0 ? 'up' : 'down'">
+                <i :class="kpis.deltas.reviews >= 0 ? 'fa-solid fa-caret-up' : 'fa-solid fa-caret-down'"></i>
+                {{ Math.abs(kpis.deltas.reviews) }} WoW
+              </span>
+            </span>
           </div>
         </div>
         <!-- Card 2 -->
@@ -77,7 +83,13 @@
           </div>
           <div class="stat-info">
             <span class="stat-value">{{ kpis.avg_rating }} / 5</span>
-            <span class="stat-label">Average Rating</span>
+            <span class="stat-label" style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+              Average Rating
+              <span v-if="kpis.deltas && kpis.deltas.rating !== 0" class="trend-badge" :class="kpis.deltas.rating >= 0 ? 'up' : 'down'">
+                <i :class="kpis.deltas.rating >= 0 ? 'fa-solid fa-caret-up' : 'fa-solid fa-caret-down'"></i>
+                {{ kpis.deltas.rating >= 0 ? '+' : '' }}{{ kpis.deltas.rating }} WoW
+              </span>
+            </span>
           </div>
         </div>
         <!-- Card 3 -->
@@ -89,7 +101,13 @@
             <span class="stat-value" :class="getSentimentClass(kpis.avg_sentiment)">
               {{ kpis.avg_sentiment > 0 ? '+' : '' }}{{ kpis.avg_sentiment }}
             </span>
-            <span class="stat-label">Sentiment Index</span>
+            <span class="stat-label" style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+              Sentiment Index
+              <span v-if="kpis.deltas && kpis.deltas.sentiment !== 0" class="trend-badge" :class="kpis.deltas.sentiment >= 0 ? 'up' : 'down'">
+                <i :class="kpis.deltas.sentiment >= 0 ? 'fa-solid fa-caret-up' : 'fa-solid fa-caret-down'"></i>
+                {{ kpis.deltas.sentiment >= 0 ? '+' : '' }}{{ kpis.deltas.sentiment }} WoW
+              </span>
+            </span>
           </div>
         </div>
         <!-- Card 4 -->
@@ -99,7 +117,13 @@
           </div>
           <div class="stat-info">
             <span class="stat-value">{{ kpis.response_rate }}%</span>
-            <span class="stat-label">Reply Rate</span>
+            <span class="stat-label" style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+              Reply Rate
+              <span v-if="kpis.deltas && kpis.deltas.response_rate !== 0" class="trend-badge" :class="kpis.deltas.response_rate >= 0 ? 'up' : 'down'">
+                <i :class="kpis.deltas.response_rate >= 0 ? 'fa-solid fa-caret-up' : 'fa-solid fa-caret-down'"></i>
+                {{ kpis.deltas.response_rate >= 0 ? '+' : '' }}{{ kpis.deltas.response_rate }}% WoW
+              </span>
+            </span>
           </div>
         </div>
       </section>
@@ -618,7 +642,13 @@ export default {
         avg_rating: 0,
         avg_sentiment: 0,
         total_reviews: 0,
-        response_rate: 0
+        response_rate: 0,
+        deltas: {
+          rating: 0,
+          sentiment: 0,
+          reviews: 0,
+          response_rate: 0
+        }
       },
       stats: {
         sources: {},
