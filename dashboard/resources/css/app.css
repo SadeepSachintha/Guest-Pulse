@@ -828,3 +828,35 @@ h1, h2, h3, h4, h5, h6 {
         width: 100vw;
     }
 }
+
+/* Highlighted Words */
+.highlight-word {
+    padding: 0.1rem 0.35rem;
+    border-radius: 4px;
+    font-weight: 600;
+    cursor: help;
+    transition: var(--transition);
+}
+
+.highlight-word.hl-positive {
+    background: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+    border-bottom: 2px solid #10b981;
+}
+
+.highlight-word.hl-negative {
+    background: rgba(244, 63, 94, 0.15);
+    color: #f43f5e;
+    border-bottom: 2px solid #f43f5e;
+}
+
+.highlight-word.hl-neutral {
+    background: rgba(14, 165, 233, 0.15);
+    color: #0ea5e9;
+    border-bottom: 2px solid #0ea5e9;
+}
+
+.highlight-word:hover {
+    filter: brightness(1.2);
+}
+

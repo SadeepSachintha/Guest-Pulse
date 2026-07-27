@@ -257,7 +257,7 @@
               </div>
             </div>
 
-            <p class="review-content">{{ review.review_text }}</p>
+            <p class="review-content" v-html="highlightReviewText(review)"></p>
 
             <!-- Aspects Found -->
             <div class="aspect-tags" v-if="review.aspect_sentiments && Object.keys(review.aspect_sentiments).length > 0">
@@ -887,6 +887,77 @@ export default {
         day: 'numeric',
         year: 'numeric'
       });
+    },
+
+    highlightReviewText(review) {
+      const text = review.review_text;
+      if (!text) return '';
+      
+      // Escape HTML to prevent XSS
+      const tempDiv = document.createElement('div');
+      tempDiv.textContent = text;
+      const safeHtml = tempDiv.innerHTML;
+      
+      if (!review.aspect_sentiments || Object.keys(review.aspect_sentiments).length === 0) {
+        return safeHtml;
+      }
+      
+      const aspectKeywords = {
+        wifi: ["wi-fi", "wifi", "internet", "connection", "router", "network", "signal", "web"],
+        food: ["food", "breakfast", "dinner", "lunch", "restaurant", "meal", "delicious", "buffet", "eat", "dining", "chef", "coffee"],
+        service: ["service", "staff", "reception", "bellboy", "employee", "waiter", "hospitality", "helpful", "friendly", "rude", "desk", "host"],
+        room: ["room", "bed", "bathroom", "shower", "aircon", "ac", "sheets", "pillow", "noise", "sleep", "suite"],
+        cleanliness: ["cleanliness", "clean", "dirty", "dust", "spotless", "hygiene", "messy", "smell", "neat", "spotted", "filthy"],
+        price: ["price", "cost", "expensive", "value", "cheap", "worth", "affordable", "pricey", "charge", "fee"]
+      };
+
+      const matches = [];
+      
+      for (const [aspect, keywords] of Object.entries(aspectKeywords)) {
+        const sentiment = review.aspect_sentiments[aspect];
+        if (!sentiment) continue;
+        
+        const hlClass = `hl-${sentiment}`;
+        
+        for (const keyword of keywords) {
+          const regex = new RegExp(`\\b${keyword}\\b`, 'gi');
+          let match;
+          while ((match = regex.exec(safeHtml)) !== null) {
+            matches.push({
+              start: match.index,
+              end: match.index + match[0].length,
+              hlClass: hlClass,
+              aspect: aspect
+            });
+          }
+        }
+      }
+      
+      if (matches.length === 0) return safeHtml;
+      
+      // Sort matches to prevent overlaps
+      matches.sort((a, b) => (a.start - b.start) || (b.end - a.end));
+      const nonOverlapping = [];
+      let lastEnd = -1;
+      for (const match of matches) {
+        if (match.start >= lastEnd) {
+          nonOverlapping.push(match);
+          lastEnd = match.end;
+        }
+      }
+      
+      // Build highlighted text
+      let result = '';
+      let cursor = 0;
+      for (const match of nonOverlapping) {
+        result += safeHtml.substring(cursor, match.start);
+        const matchedText = safeHtml.substring(match.start, match.end);
+        result += `<span class="highlight-word ${match.hlClass}" title="${match.aspect === 'wifi' ? 'Wi-Fi' : match.aspect}: ${match.hlClass.replace('hl-', '')}">${matchedText}</span>`;
+        cursor = match.end;
+      }
+      result += safeHtml.substring(cursor);
+      
+      return result;
     },
 
     getSourceIcon(source) {
