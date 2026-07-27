@@ -165,6 +165,31 @@
         </div>
       </section>
 
+      <!-- Escalation Banner -->
+      <div v-if="escalatedReviews.length > 0" style="background: rgba(244, 63, 94, 0.06); border: 1px solid rgba(244, 63, 94, 0.2); padding: 1.25rem; border-radius: 16px; margin-bottom: 2rem; display: flex; flex-direction: column; gap: 0.75rem;">
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+          <h4 style="color: var(--danger); display: flex; align-items: center; gap: 0.5rem; font-size: 1rem; font-weight: 700;">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            Critical Escalation: {{ escalatedReviews.length }} Review(s) Require GM Attention
+          </h4>
+          <span style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px; background: var(--danger); color: white; padding: 0.25rem 0.6rem; border-radius: 4px; font-weight: 700;">Action Required</span>
+        </div>
+        <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.4;">
+          These guest reviews scored very low on NLP sentiment checks and require immediate service recovery response.
+        </p>
+        <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.25rem;">
+          <div v-for="rev in escalatedReviews" :key="rev.id" style="background: rgba(0,0,0,0.15); padding: 0.75rem 1rem; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 3px solid var(--danger);">
+            <div style="font-size: 0.85rem; display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+              <span class="source-badge" :class="rev.source" style="padding: 0.2rem 0.4rem; font-size: 0.65rem;">{{ rev.source }}</span>
+              <strong>{{ rev.reviewer_name }}</strong>: <span style="color: var(--text-main);">"{{ truncateText(rev.review_text, 70) }}"</span>
+            </div>
+            <button @click="openResponseDrawer(rev)" class="btn-primary btn-sm" style="padding: 0.35rem 0.75rem; font-size: 0.75rem; background: var(--danger); box-shadow: none; flex-shrink: 0;">
+              Resolve Now
+            </button>
+          </div>
+        </div>
+      </div>
+
       <!-- Reviews Feed -->
       <section class="feed-section">
         <div class="feed-header">
@@ -608,6 +633,11 @@ export default {
       sourceChart: null
     };
   },
+  computed: {
+    escalatedReviews() {
+      return this.reviews.filter(r => r.sentiment_score <= -0.5 && r.response_status === 'pending');
+    }
+  },
   mounted() {
     this.fetchStats();
     this.fetchReviews();
@@ -991,6 +1021,11 @@ export default {
       if (type === 'success') return 'fa-solid fa-circle-check';
       if (type === 'error') return 'fa-solid fa-circle-exclamation';
       return 'fa-solid fa-circle-info';
+    },
+
+    truncateText(text, length) {
+      if (!text) return '';
+      return text.length > length ? text.substring(0, length) + '...' : text;
     }
   }
 };

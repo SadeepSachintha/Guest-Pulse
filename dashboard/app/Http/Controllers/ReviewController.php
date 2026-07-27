@@ -200,6 +200,10 @@ class ReviewController extends Controller
                     'response_status' => 'pending'
                 ]);
 
+                if ($sentimentScore <= -0.5) {
+                    Log::warning("CRITICAL REPUTATION ESCALATION: Highly negative review received from {$rawReview['reviewer_name']} on {$rawReview['source']}. Rating: {$rawReview['rating']}. Sentiment Score: {$sentimentScore}. Review: \"{$rawReview['review_text']}\"");
+                }
+
                 $newCount++;
             }
 
