@@ -1,5 +1,6 @@
 <template>
-  <div class="app-layout">
+  <div>
+    <div class="app-layout" v-if="hasAccess">
     <!-- Sidebar -->
     <aside class="app-sidebar" :class="{ collapsed: isSidebarCollapsed }">
       <div class="brand">
@@ -28,12 +29,15 @@
         </li>
       </ul>
       
-      <div class="sidebar-footer">
-        <div class="avatar">GP</div>
-        <div class="user-info">
-          <span class="user-name">Manager Hub</span>
-          <span class="user-role">Administrator</span>
+      <div class="sidebar-footer" style="display: flex; align-items: center; width: 100%; box-sizing: border-box;">
+        <div class="avatar">{{ user.initials }}</div>
+        <div class="user-info" style="flex-grow: 1;">
+          <span class="user-name">{{ user.name }}</span>
+          <span class="user-role">{{ user.role }}</span>
         </div>
+        <a href="http://localhost/HMS/public/dashboard" class="btn-logout" title="Exit to HMS" style="color: #94a3b8; cursor: pointer; transition: 0.2s; font-size: 1.1rem; padding: 5px; display: flex; align-items: center;" onmouseover="this.style.color='#f43f5e'" onmouseout="this.style.color='#94a3b8'">
+          <i class="fa-solid fa-right-from-bracket"></i>
+        </a>
       </div>
     </aside>
 
@@ -632,6 +636,14 @@
       <span>{{ toast.message }}</span>
     </div>
   </div>
+
+  <div v-else class="access-denied-layout" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #0f111a; color: #f8fafc; font-family: 'Plus Jakarta Sans', sans-serif;">
+     <i class="fa-solid fa-circle-exclamation" style="font-size: 4rem; color: #f43f5e; margin-bottom: 1.5rem;"></i>
+     <h1 style="font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem;">Access Denied</h1>
+     <p style="color: #94a3b8; margin-bottom: 2rem;">You do not have permission to access Guest Pulse AI.</p>
+     <a href="http://localhost/HMS/public/dashboard" style="background: #6366f1; color: white; padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 600; text-decoration: none; transition: 0.2s;">Return to HMS Portal</a>
+  </div>
+</div>
 </template>
 
 <script>
@@ -689,15 +701,48 @@ export default {
       },
       searchTimeout: null,
       sentimentChart: null,
-      sourceChart: null
+      sourceChart: null,
+      user: {
+        name: 'Manager Hub',
+        role: 'Administrator',
+        initials: 'GP'
+      }
     };
   },
   computed: {
     escalatedReviews() {
       return this.reviews.filter(r => r.sentiment_score <= -0.5 && r.response_status === 'pending');
+    },
+    hasAccess() {
+      const role = (this.user.role || '').toLowerCase();
+      return role === 'administrator' || role === 'manager' || role === 'admin';
     }
   },
   mounted() {
+    // Parse user profile from URL parameters (passed from HMS 2.0 sidebar link)
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlName = urlParams.get('user_name');
+    const urlRole = urlParams.get('user_role');
+    
+    if (urlName) {
+      this.user.name = urlName;
+      const parts = urlName.split(' ');
+      if (parts.length >= 2) {
+        this.user.initials = (parts[0][0] + parts[1][0]).toUpperCase();
+      } else if (parts.length === 1) {
+        this.user.initials = parts[0].substring(0, 2).toUpperCase();
+      }
+    }
+    
+    if (urlRole) {
+      const roleMap = {
+        admin: 'Administrator',
+        manager: 'Manager',
+        staff: 'Staff Member'
+      };
+      this.user.role = roleMap[urlRole.toLowerCase()] || urlRole;
+    }
+
     this.fetchStats();
     this.fetchReviews();
   },
